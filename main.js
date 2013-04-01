@@ -29,6 +29,7 @@ function loadData() {
 		year_built: +d.year_built,
 		zestimate: +d.zestimate,
         price: +d.price
+        
 		// note that here we could have put all of the fields. this is just for demonstrative purposes.
 	  };
 	  // this is the callback function that handles any errors and results
@@ -78,7 +79,11 @@ function loadData() {
                     return d.price/40000
                 })
 				// fill color of the circles
-				.attr("fill","blue")
+				.attr("fill",function(d) {
+                    if (d.price>700000) return "red";
+                    else if (d.price<400000) return "green";
+                    else return "blue";
+                })
                 .attr("stroke","black");
 	});
 	/**

@@ -27,7 +27,8 @@ function loadData() {
 		// in the first line "year_built" is our custom json key for year built
 		// +d.year_built returns the field year_built from the csv file and casts it to integer/float (if possible)
 		year_built: +d.year_built,
-		zestimate: +d.zestimate
+		zestimate: +d.zestimate,
+        price: +d.price
 		// note that here we could have put all of the fields. this is just for demonstrative purposes.
 	  };
 	  // this is the callback function that handles any errors and results
@@ -73,9 +74,12 @@ function loadData() {
 			return +d.zestimate * 5			
 		})
 				// radius of the circles
-				.attr("r",3)
+				.attr("r",function(d) {
+                    return d.price/40000
+                })
 				// fill color of the circles
-				.attr("fill","blue");
+				.attr("fill","blue")
+                .attr("stroke","black");
 	});
 	/**
 		REMINDER: BY DEFAULT, SVG'S X=0 AND Y=0 START ON TOP LEFT. 

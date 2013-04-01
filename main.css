@@ -16,9 +16,16 @@ body {
 .title {
     width: 100%;
     text-align: center;
-    margin: 25px 25px 50px 25px;
+    margin: 25px 25px 0px 0px;
     font: 22pt times;
 }
+.subtitle {
+    width: 100%;
+    text-align: center;
+    margin: 0px 25px 50px 0px;
+    font: 14pt times;
+}
+
 
 .scatterplot {
     width: 300px;

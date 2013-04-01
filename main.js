@@ -42,11 +42,11 @@ function loadData() {
 		// console.log(rows);
 		
 		// width and height variables for svg
-		var w = 1000;
-		var h = 800;
+		var w = 300;
+		var h = 200;
 		
 		// create an svg object with width and height
-		var svg = d3.select("body")
+		var svg = d3.select(".scatterplot")
 				.append("svg")
 				.attr("width",w)
 				.attr("height",h);

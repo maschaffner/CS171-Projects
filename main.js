@@ -26,9 +26,10 @@ function loadData() {
 		// The + prefix means cast to integer/float. 
 		// in the first line "year_built" is our custom json key for year built
 		// +d.year_built returns the field year_built from the csv file and casts it to integer/float (if possible)
-		price: +d.year_built,
-		sqFt: +d.zestimate,
-        price: +d.price
+		year_built: +d.yearBuilt,
+		zestimate: +d.zestimate,
+        sqFt: +d.sqFt,
+        price: +d.price,
         
 		// note that here we could have put all of the fields. this is just for demonstrative purposes.
 	  };
@@ -42,12 +43,18 @@ function loadData() {
 		//uncomment below line to see json objects in console
 		// console.log(rows);
 		
+        /* BEGIN pricePerSqFt line graph */
+        createPricePerSqFtLineGraph();
+                 
+        /* END pricePerSqFt line graph */
+        
+        
 		// width and height variables for svg
 		var w = 300;
 		var h = 200;
 		
 		// create an svg object with width and height
-		var svg = d3.select(".scatterplot")
+		var svg = d3.select("#yearVsPrice")
 				.append("svg")
 				.attr("width",w)
 				.attr("height",h);
@@ -91,6 +98,68 @@ function loadData() {
 		WE'D HAVE TO USE THE SVG BUILT IN FUNCTIONS AS WE DID IN HOMEWORK TO HAVE THE VISUALS
 		ALIGN RIGHT SIDE UP
 	*/
+}
+
+// PricePerSqFtLineGraph
+function createPricePerSqFtLineGraph() {
+        var margin = {top: 20, right: 20, bottom: 40, left: 100},
+            width = 450 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+        var x = d3.scale.linear()
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .ticks(5);
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(d.sqFt); })
+            .y(function(d) { return y(d.price); });
+
+        var svg = d3.select("body").select("#pricePerSqFt").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+        x.domain([d3.min(data, function(d) { return d.sqFt; }),1000]);
+          y.domain([0,d3.max(data, function(d) { return d.price; })]);
+
+          svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xAxis)
+            .append("text")
+              .attr("y", 36)
+              .attr("x", 200)
+              .text("Square Footage (Sq Ft)");
+
+          svg.append("g")
+              .attr("class", "y axis")
+              .call(yAxis)
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", -90)
+              .attr("x",-200)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("Price ($)");
+
+          svg.append("path")
+              .datum(data)
+              .attr("class", "line")
+              .attr("d", line)
+              .style("fill","none")
+              .style("stroke","#000");
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file

@@ -17,7 +17,7 @@ function loadData() {
 	
 	// makes an http get request to the web server. "d" is the content that is dumped from the csv file
 	// back to the client page
-	d3.csv("test.csv", function(d) {
+	d3.csv("proj2_boston_forsale.csv", function(d) {
 	
 	// push all of the csv content into our array "data"
 	data.push(d);
@@ -26,8 +26,8 @@ function loadData() {
 		// The + prefix means cast to integer/float. 
 		// in the first line "year_built" is our custom json key for year built
 		// +d.year_built returns the field year_built from the csv file and casts it to integer/float (if possible)
-		year_built: +d.year_built,
-		zestimate: +d.zestimate,
+		price: +d.year_built,
+		SqFt: +d.zestimate,
         price: +d.price
         
 		// note that here we could have put all of the fields. this is just for demonstrative purposes.

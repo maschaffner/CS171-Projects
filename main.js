@@ -132,8 +132,8 @@ function createPricePerSqFtLineGraph() {
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
-        x.domain([0,3000]);
-        y.domain([0,3000000]);
+        x.domain([0,4000]);
+        y.domain([0,5000000]);
         
           svg.append("g")
               .attr("class", "x axis")
@@ -161,6 +161,22 @@ function createPricePerSqFtLineGraph() {
               .attr("d", line)
               .style("fill","none")
               .style("stroke","#777");
+}
+
+/*** Example of smoothly filtering out. Will NOT work on the line graph. ***/
+function updateChart() {
+    var minPrice = 1000000;
+    var data2 = data.filter(function(d) {return d.price>minPrice ? this : null});
+    var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
+        .data(data2);
+    svg.exit().transition()
+        .attr("r","0")
+        .remove()
+        .duration(2000)
+    // now update the line chart
+    var xG = d3.select("body").select("#yearVsPrice").select("svg").select("g");
+    var graphAxis = d3.select("body").select("#yearVsPrice").select("svg").axis();
+    // hmmmmm....
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file

@@ -79,11 +79,11 @@ function loadData() {
 		// again, here we'd need to used domain and scaling for our real numbers
 				.attr("cy",function(d) { 
 			// multiplying by 10 gives the points a vertical spread. change that number and see what happens.
-			return +d.zestimate * 5			
+			return d.price/40000			
 		})
 				// radius of the circles
 				.attr("r",function(d) {
-                    return d.price/40000
+                    return d.price/400000
                 })
 				// fill color of the circles
 				.attr("fill",function(d) {
@@ -102,6 +102,7 @@ function loadData() {
 
 // PricePerSqFtLineGraph
 function createPricePerSqFtLineGraph() {
+        data.sort(function(a,b) {return (b.sqFt-a.sqFt)});
         var margin = {top: 20, right: 20, bottom: 40, left: 100},
             width = 450 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom;
@@ -120,7 +121,7 @@ function createPricePerSqFtLineGraph() {
         var yAxis = d3.svg.axis()
             .scale(y)
             .orient("left");
-
+ 
         var line = d3.svg.line()
             .x(function(d) { return x(d.sqFt); })
             .y(function(d) { return y(d.price); });
@@ -128,12 +129,12 @@ function createPricePerSqFtLineGraph() {
         var svg = d3.select("body").select("#pricePerSqFt").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-          .append("g")
+            .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
-        x.domain([d3.min(data, function(d) { return d.sqFt; }),1000]);
-          y.domain([0,d3.max(data, function(d) { return d.price; })]);
-
+        x.domain([0,3000]);
+        y.domain([0,3000000]);
+        
           svg.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
@@ -159,7 +160,7 @@ function createPricePerSqFtLineGraph() {
               .attr("class", "line")
               .attr("d", line)
               .style("fill","none")
-              .style("stroke","#000");
+              .style("stroke","#777");
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file

@@ -163,20 +163,37 @@ function createPricePerSqFtLineGraph() {
               .style("stroke","#777");
 }
 
-/*** Example of smoothly filtering out. Will NOT work on the line graph. ***/
+/*** Example of smoothly filtering out values. Will NOT work on the line graph. ***/
 function updateChart() {
+    // Take care of the bubble plot
     var minPrice = 1000000;
     var data2 = data.filter(function(d) {return d.price>minPrice ? this : null});
+    
     var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
         .data(data2);
     svg.exit().transition()
         .attr("r","0")
         .remove()
         .duration(2000)
+    
     // now update the line chart
-    var xG = d3.select("body").select("#yearVsPrice").select("svg").select("g");
-    var graphAxis = d3.select("body").select("#yearVsPrice").select("svg").axis();
-    // hmmmmm....
+    var xScale = d3.scale.linear()
+        .domain([1500,4000])
+        .clamp(true)
+        .range([0,450]);
+    var yScale = d3.scale.linear()
+        .domain([minPrice,4000])
+        .clamp(true)
+        .range([0,450]);    
+    var line = d3.svg.line()
+            .x(data2, function(d) { return xScale(d.sqFt); })
+            .y(data2, function(d) { return yScale(d.price); });
+    d3.select("path")
+        .attr("d",line);
+    d3.select("g.x.axis").call(d3.svg.axis().scale(xScale).orient("bottom"));
+    
+    /* I'm officially giving this up. It's impossible. */
+
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file

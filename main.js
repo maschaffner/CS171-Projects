@@ -45,7 +45,7 @@ function loadData() {
 		
         /* BEGIN pricePerSqFt line graph */
         createPricePerSqFtLineGraph();
-                 
+        //createPricePerSqFtScatterplot();
         /* END pricePerSqFt line graph */
         
         
@@ -99,7 +99,50 @@ function loadData() {
 		ALIGN RIGHT SIDE UP
 	*/
 }
+/* PricePerSqFtScatterplot
+function createPricePerSqFtScatterplot() {
+        var w = 450;
+		var h = 300;
+		
+		// create an svg object with width and height
+		var svg = d3.select("#pricePerSqFt")
+				.append("svg")
+				.attr("width",w)
+				.attr("height",h);
+		
+		// create circles based on our json data. note that this is only for the append operation
+		// in actual vis we'd have to also specify code for update and exit
+		var circles = svg.selectAll("circle")
+						 .data(data)
+						 .enter()
+						 .append("circle")
+						 .transition().duration(1000);
+		
+        var xScale = d3.scale.linear()
+            .range([0, w])
+            .domain([0,4000]);
 
+        var yScale = d3.scale.linear()
+            .range([0,h])
+            .domain(d3.extent(data,function(d) {return d.price}));
+		// plot the circles on the x axis. since i haven't used the domain and scale capability of svg
+		// (which we should ideally do), i used 1800 as a base year for year built.
+		// by subtracting 1800 from year built, we'd have a reasonable residue value that could 
+		// easily plot on the x axis without going out of bounds. again, this is just for demonstration
+		
+        circles
+            .attr("cx",function(d) {
+                return xScale(d.sqFt);
+            })
+		    .attr("cy",function(d) { 
+                return yScale(d.price);			
+            })
+			// radius of the circles
+            .attr("r","1")
+			// fill color of the circles
+            .attr("fill","gray")
+            .attr("stroke","lightgray");
+} */
 // PricePerSqFtLineGraph
 function createPricePerSqFtLineGraph() {
         data.sort(function(a,b) {return (b.sqFt-a.sqFt)});
@@ -166,9 +209,12 @@ function createPricePerSqFtLineGraph() {
 /*** Example of smoothly filtering out values. Will NOT work on the line graph. ***/
 function updateChart() {
     // Take care of the bubble plot
-    var minPrice = 1000000;
-    var data2 = data.filter(function(d) {return d.price>minPrice ? this : null});
+    var minPrice = 0;
+    var minSqFt = document.getElementById("minSqFt").value;
+    var maxSqFt = document.getElementById("maxSqFt").value;
     
+    var data2 = data.filter(function(d) {return d.sqFt>minSqFt ? this : null});
+    yDomain = d3.extent(data2,function(d) {return d.price});
     var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
         .data(data2);
     svg.exit().transition()
@@ -178,19 +224,18 @@ function updateChart() {
     
     // now update the line chart
     var xScale = d3.scale.linear()
-        .domain([1500,4000])
-        .clamp(true)
+        .domain([minSqFt,maxSqFt])
         .range([0,450]);
     var yScale = d3.scale.linear()
-        .domain([minPrice,4000])
-        .clamp(true)
-        .range([0,450]);    
-    var line = d3.svg.line()
-            .x(data2, function(d) { return xScale(d.sqFt); })
-            .y(data2, function(d) { return yScale(d.price); });
-    d3.select("path")
-        .attr("d",line);
-    d3.select("g.x.axis").call(d3.svg.axis().scale(xScale).orient("bottom"));
+        .domain(yDomain)
+        .range([0,450]);
+    var line2 = d3.svg.line()
+            .x(function(d) { return xScale(d.sqFt); })
+            .y(function(d) { return yScale(d.price); });
+    d3.select("body").select("#pricePerSqFt").select("path.line")
+        .transition().duration(1000)
+            .attr("d",line2)
+            d3.select("g.x.axis").call(d3.svg.axis().scale(xScale).orient("bottom"));
     
     /* I'm officially giving this up. It's impossible. */
 

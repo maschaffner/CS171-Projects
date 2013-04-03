@@ -214,7 +214,9 @@ function updateChart() {
     var maxSqFt = document.getElementById("maxSqFt").value;
     
     var data2 = data.filter(function(d) {return d.sqFt>minSqFt ? this : null});
-    yDomain = d3.extent(data2,function(d) {return d.price});
+    // this next line doesn't seem to work very well
+    //yDomain = d3.extent(data2,function(d) {return d.price});
+    var yDomain=[1400000,0];
     var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
         .data(data2);
     svg.exit().transition()
@@ -228,7 +230,7 @@ function updateChart() {
         .range([0,450]);
     var yScale = d3.scale.linear()
         .domain(yDomain)
-        .range([0,450]);
+        .range([0,250]);
     var line2 = d3.svg.line()
             .x(function(d) { return xScale(d.sqFt); })
             .y(function(d) { return yScale(d.price); });
@@ -236,6 +238,7 @@ function updateChart() {
         .transition().duration(1000)
             .attr("d",line2)
             d3.select("g.x.axis").call(d3.svg.axis().scale(xScale).orient("bottom"));
+            d3.select("g.y.axis").call(d3.svg.axis().scale(yScale).orient("left"));
     
     /* I'm officially giving this up. It's impossible. */
 

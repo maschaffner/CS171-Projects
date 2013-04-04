@@ -19,6 +19,7 @@ function loadData() {
 	// back to the client page
 	d3.csv("proj2_boston_forsale.csv", function(d) {
 	
+        unfilteredData = d;
 	// push all of the csv content into our array "data"
 	data.push(d);
 	  return {
@@ -44,9 +45,11 @@ function loadData() {
 		// console.log(rows);
 		
         /* BEGIN pricePerSqFt line graph */
-        createPricePerSqFtLineGraph();
-        //createPricePerSqFtScatterplot();
+        //createPricePerSqFtLineGraph();
+        createPricePerSqFtScatterplot();
         /* END pricePerSqFt line graph */
+        
+        createBulletGraph();
         
         
 		// width and height variables for svg
@@ -99,7 +102,7 @@ function loadData() {
 		ALIGN RIGHT SIDE UP
 	*/
 }
-/* PricePerSqFtScatterplot
+// PricePerSqFtScatterplot
 function createPricePerSqFtScatterplot() {
         var w = 450;
 		var h = 300;
@@ -142,8 +145,20 @@ function createPricePerSqFtScatterplot() {
 			// fill color of the circles
             .attr("fill","gray")
             .attr("stroke","lightgray");
-} */
-// PricePerSqFtLineGraph
+} 
+
+/*** BEGIN BulletGraph   ***/
+    function createBulletGraph() {
+        d3.select("#bulletGraph").select("div")
+            // need to know how to access one record from the JSON object
+            .data()//how to do this part
+        var vertScale = d3.scale.linear()
+            .range([0,100])
+            .domain([0,100]);
+    }
+/*** END BulletGraph ***/  
+
+/* PricePerSqFtLineGraph
 function createPricePerSqFtLineGraph() {
         data.sort(function(a,b) {return (b.sqFt-a.sqFt)});
         var margin = {top: 20, right: 20, bottom: 40, left: 100},
@@ -203,8 +218,16 @@ function createPricePerSqFtLineGraph() {
               .attr("class", "line")
               .attr("d", line)
               .style("fill","none")
-              .style("stroke","#777");
-}
+              .style("stroke","#DDD");
+          //optional
+          /*svg.selectAll("dot")
+                .data(data)
+                .enter().append("circle")
+                    .attr("r",1)
+                    .attr("cx",function(d) { return x(d.sqFt)})
+                    .attr("cy",function(d) { return y(d.price)})
+                    .attr("stroke","#AAA"); 
+}*/
 
 /*** Example of smoothly filtering out values. Will NOT work on the line graph. ***/
 function updateChart() {
@@ -213,9 +236,10 @@ function updateChart() {
     var minSqFt = document.getElementById("minSqFt").value;
     var maxSqFt = document.getElementById("maxSqFt").value;
     
-    var data2 = data.filter(function(d) {return d.sqFt>minSqFt ? this : null});
+    data2 = data.filter(function(d) {return (d.sqFt>minSqFt)});
     // this next line doesn't seem to work very well
-    //yDomain = d3.extent(data2,function(d) {return d.price});
+    yDomain = d3.extent(function(d) {return d.price});
+    //alert(data2.price);
     var yDomain=[1400000,0];
     var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
         .data(data2);
@@ -224,7 +248,7 @@ function updateChart() {
         .remove()
         .duration(2000)
     
-    // now update the line chart
+    /*/ now update the line chart
     var xScale = d3.scale.linear()
         .domain([minSqFt,maxSqFt])
         .range([0,450]);
@@ -236,11 +260,14 @@ function updateChart() {
             .y(function(d) { return yScale(d.price); });
     d3.select("body").select("#pricePerSqFt").select("path.line")
         .transition().duration(1000)
-            .attr("d",line2)
-            d3.select("g.x.axis").call(d3.svg.axis().scale(xScale).orient("bottom"));
-            d3.select("g.y.axis").call(d3.svg.axis().scale(yScale).orient("left"));
+            .attr("d",line2);
     
-    /* I'm officially giving this up. It's impossible. */
+    d3.select("g.x.axis")
+        .transition().duration(1000)
+            .call(d3.svg.axis().scale(xScale).orient("bottom"));
+    d3.select("g.y.axis").call(d3.svg.axis().scale(yScale).orient("left"));
+
+    */
 
 }
 

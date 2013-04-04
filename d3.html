@@ -4,11 +4,44 @@
     <title></title>
 	<!-- haven't applied any styling in this example -->
     <link rel="stylesheet" type="text/css" href="main.css"/>
-
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
     <!-- Link to d3 library -->
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="main.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <script>
+  $(function() {
+    $( "#slider-range-sqft" ).slider({
+      range: true,
+      min: 0,
+      max: 4000,
+      values: [ 0, 3000 ],
+      slide: function( event, ui ) {
+        $( "#amountSqft" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] + " sq ft" );
+        updateChart();
+      }
+    });
+    $( "#amountSqft" ).val( $( "#slider-range-sqft" ).slider( "values", 0 ) +
+      " - " + $( "#slider-range-sqft" ).slider( "values", 1 ) + " sq ft");
+  });
+  </script>
+      <script>
+  $(function() {
+    $( "#slider-range-price" ).slider({
+      range: true,
+      min: 0,
+      max: 6000000,
+      values: [ 0, 1000000 ],
+      slide: function( event, ui ) {
+        $( "#amountPrice" ).val( "$" + ui.values[ 0 ] + " - " + " $" + ui.values[ 1 ]);
+        updateChart();
+      }
+    });
+    $( "#amountPrice" ).val( "$" +  $("#slider-range-price" ).slider( "values", 0 ) +
+      " - " +" $"+ $( "#slider-range-price" ).slider( "values", 1 ));
+  });
+  </script>
+  <script src="main.js"></script>
   </head>
 
   <body onload="loadData()" onclick="updateChart()">
@@ -29,7 +62,18 @@
         <div class="controls">
             <div class="controls" id="checkbox_beds"></div>
             <div class="controls" id="checkbox_baths"></div>
-            <div class="controls" id="slider_sqFt"><form method="post" action="">Min sqft:<textarea name="minSqFt" id="minSqFt">750</textarea><br/>Max sqft:<textarea name="maxSqFt" id="maxSqFt">1500</textarea></form></div>
+            <div class="controls" id="slider_sqFt">
+                <p>
+                    <label for="amountSqft">Square Footage:</label>
+                    <input type="text" id="amountSqft" style="border: 0; color: #000; font-weight: bold;" />
+                </p>
+                <div id="slider-range-sqft"></div>
+                <p>
+                    <label for="amountPrice">Price:</label>
+                    <input type="text" id="amountPrice" style="width: 200px; border: 0; color: #000; font-weight: bold;" />
+                </p>
+                <div id="slider-range-price"></div>
+            </div>
             <div class="controls" id="slider_price"></div>
             <div class="controls" id="zipCodeSelector"></div>
         </div>

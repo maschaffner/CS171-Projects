@@ -43,59 +43,16 @@ function loadData() {
 	  // I only stored the data in two ways just for demonstration
 		//uncomment below line to see json objects in console
 		// console.log(rows);
-		
+
+        
         /* BEGIN pricePerSqFt line graph */
         //createPricePerSqFtLineGraph();
         createPricePerSqFtScatterplot();
         /* END pricePerSqFt line graph */
         
-        createBulletGraph();
+        //createBulletGraph();
         
-        
-		// width and height variables for svg
-		var w = 300;
-		var h = 200;
-		
-		// create an svg object with width and height
-		var svg = d3.select("#yearVsPrice")
-				.append("svg")
-				.attr("width",w)
-				.attr("height",h);
-		
-		// create circles based on our json data. note that this is only for the append operation
-		// in actual vis we'd have to also specify code for update and exit
-		var circles = svg.selectAll("circle")
-						 .data(rows)
-						 .enter()
-						 .append("circle")
-						 .transition().duration(1000);
-		
-		// plot the circles on the x axis. since i haven't used the domain and scale capability of svg
-		// (which we should ideally do), i used 1800 as a base year for year built.
-		// by subtracting 1800 from year built, we'd have a reasonable residue value that could 
-		// easily plot on the x axis without going out of bounds. again, this is just for demonstration
-		circles.attr("cx",function(d) {
-			return d.year_built - 1800;
-		})
-		// i put mock values for zestimate (ranging between 0 and 25) in test.csv, so that i could
-		// see the points/circles plot on the y axis.
-		// again, here we'd need to used domain and scaling for our real numbers
-				.attr("cy",function(d) { 
-			// multiplying by 10 gives the points a vertical spread. change that number and see what happens.
-			return d.price/40000			
-		})
-				// radius of the circles
-				.attr("r",function(d) {
-                    return d.price/400000
-                })
-				// fill color of the circles
-				.attr("fill",function(d) {
-                    if (d.price>700000) return "red";
-                    else if (d.price<400000) return "green";
-                    else return "blue";
-                })
-                .attr("stroke","black");
-	});
+});
 	/**
 		REMINDER: BY DEFAULT, SVG'S X=0 AND Y=0 START ON TOP LEFT. 
 		WE'D HAVE TO USE THE SVG BUILT IN FUNCTIONS AS WE DID IN HOMEWORK TO HAVE THE VISUALS
@@ -104,14 +61,18 @@ function loadData() {
 }
 // PricePerSqFtScatterplot
 function createPricePerSqFtScatterplot() {
-        var w = 450;
-		var h = 300;
-		
+
+        var margin = {top: 20, right: 20, bottom: 40, left: 100},
+            width = 450 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
 		// create an svg object with width and height
-		var svg = d3.select("#pricePerSqFt")
-				.append("svg")
-				.attr("width",w)
-				.attr("height",h);
+		var svg = d3.select("body").select("#pricePerSqFt").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("id","svgScatter")
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 		
 		// create circles based on our json data. note that this is only for the append operation
 		// in actual vis we'd have to also specify code for update and exit
@@ -122,17 +83,41 @@ function createPricePerSqFtScatterplot() {
 						 .transition().duration(1000);
 		
         var xScale = d3.scale.linear()
-            .range([0, w])
+            .range([0, width])
             .domain([0,4000]);
 
         var yScale = d3.scale.linear()
-            .range([0,h])
+            .range([0,height])
             .domain(d3.extent(data,function(d) {return d.price}));
-		// plot the circles on the x axis. since i haven't used the domain and scale capability of svg
-		// (which we should ideally do), i used 1800 as a base year for year built.
-		// by subtracting 1800 from year built, we'd have a reasonable residue value that could 
-		// easily plot on the x axis without going out of bounds. again, this is just for demonstration
-		
+
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(5);
+            
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+		svg.append("g")
+              .attr("class", "x axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(xAxis)
+            .append("text")
+              .attr("y", 36)
+              .attr("x", 100)
+              .text("Square Footage (Sq Ft)");
+        svg.append("g")
+              .attr("class", "y axis")
+              .call(yAxis)
+            .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", -90)
+              .attr("x",-200)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text("Price ($)");
+              
         circles
             .attr("cx",function(d) {
                 return xScale(d.sqFt);
@@ -147,7 +132,7 @@ function createPricePerSqFtScatterplot() {
             .attr("stroke","lightgray");
 } 
 
-/*** BEGIN BulletGraph   ***/
+/*** BEGIN BulletGraph   ***
     function createBulletGraph() {
         d3.select("#bulletGraph").select("div")
             // need to know how to access one record from the JSON object
@@ -158,116 +143,40 @@ function createPricePerSqFtScatterplot() {
     }
 /*** END BulletGraph ***/  
 
-/* PricePerSqFtLineGraph
-function createPricePerSqFtLineGraph() {
-        data.sort(function(a,b) {return (b.sqFt-a.sqFt)});
-        var margin = {top: 20, right: 20, bottom: 40, left: 100},
-            width = 450 - margin.left - margin.right,
-            height = 300 - margin.top - margin.bottom;
 
-        var x = d3.scale.linear()
-            .range([0, width]);
-
-        var y = d3.scale.linear()
-            .range([height, 0]);
-
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom")
-            .ticks(5);
-
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left");
- 
-        var line = d3.svg.line()
-            .x(function(d) { return x(d.sqFt); })
-            .y(function(d) { return y(d.price); });
-
-        var svg = d3.select("body").select("#pricePerSqFt").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        
-        x.domain([0,4000]);
-        y.domain([0,5000000]);
-        
-          svg.append("g")
-              .attr("class", "x axis")
-              .attr("transform", "translate(0," + height + ")")
-              .call(xAxis)
-            .append("text")
-              .attr("y", 36)
-              .attr("x", 200)
-              .text("Square Footage (Sq Ft)");
-
-          svg.append("g")
-              .attr("class", "y axis")
-              .call(yAxis)
-            .append("text")
-              .attr("transform", "rotate(-90)")
-              .attr("y", -90)
-              .attr("x",-200)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text("Price ($)");
-
-          svg.append("path")
-              .datum(data)
-              .attr("class", "line")
-              .attr("d", line)
-              .style("fill","none")
-              .style("stroke","#DDD");
-          //optional
-          /*svg.selectAll("dot")
-                .data(data)
-                .enter().append("circle")
-                    .attr("r",1)
-                    .attr("cx",function(d) { return x(d.sqFt)})
-                    .attr("cy",function(d) { return y(d.price)})
-                    .attr("stroke","#AAA"); 
-}*/
-
-/*** Example of smoothly filtering out values. Will NOT work on the line graph. ***/
+/*** Example of smoothly filtering out values, by only changing visibility.*/
 function updateChart() {
     // Take care of the bubble plot
     var minPrice = 0;
-    var minSqFt = document.getElementById("minSqFt").value;
-    var maxSqFt = document.getElementById("maxSqFt").value;
+    var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
+    var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
+    var minPrice = parseInt($("#slider-range-price").slider("values",0));
+    var maxPrice = parseInt($("#slider-range-price").slider("values",1));
     
-    data2 = data.filter(function(d) {return (d.sqFt>minSqFt)});
-    // this next line doesn't seem to work very well
-    yDomain = d3.extent(function(d) {return d.price});
-    //alert(data2.price);
-    var yDomain=[1400000,0];
-    var svg = d3.select("body").select("#yearVsPrice").selectAll("circle")
-        .data(data2);
-    svg.exit().transition()
-        .attr("r","0")
-        .remove()
-        .duration(2000)
-    
-    /*/ now update the line chart
+    xDomain = [minSqFt,maxSqFt];
+    yDomain = [maxPrice,minPrice];
+
+    // now update the line chart
     var xScale = d3.scale.linear()
-        .domain([minSqFt,maxSqFt])
-        .range([0,450]);
+        .domain(xDomain)
+        .range([0,330]);
     var yScale = d3.scale.linear()
         .domain(yDomain)
-        .range([0,250]);
-    var line2 = d3.svg.line()
-            .x(function(d) { return xScale(d.sqFt); })
-            .y(function(d) { return yScale(d.price); });
-    d3.select("body").select("#pricePerSqFt").select("path.line")
+        .range([0,240]);
+        
+    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
         .transition().duration(1000)
-            .attr("d",line2);
+            .attr("cx",function(d) {return xScale(d.sqFt)})
+            .attr("cy",function(d) {return yScale(d.price)})
+            .attr("visibility", function(d) {
+                return d.price > minPrice && d.price < maxPrice && d.sqFt > minSqFt && d.sqFt < maxSqFt ? "visible" : "hidden"});
     
-    d3.select("g.x.axis")
+    d3.select("#pricePerSqFt").select("g.x.axis")
         .transition().duration(1000)
-            .call(d3.svg.axis().scale(xScale).orient("bottom"));
-    d3.select("g.y.axis").call(d3.svg.axis().scale(yScale).orient("left"));
-
-    */
+            .call(d3.svg.axis().scale(xScale).orient("bottom").ticks(5));
+    d3.select("#pricePerSqFt").select("g.y.axis")
+        .transition().duration(1000)
+            .call(d3.svg.axis().scale(yScale).orient("left"));
 
 }
 

@@ -44,25 +44,27 @@
   <script src="main.js"></script>
   </head>
 
-  <body onload="loadData()" onclick="updateChart()">
+  <body onload="loadData()">
     <div class="content">
         <!--This title is an example only; we can brainstorm a new one.-->
         <div class="title">MarketVision(tm)</div>
         <div class="subtitle">A Fresh Look At Real Estate</div>
-        <div class="largeView">
-            <div id="zipcodeMap"></div>
-        </div>
+        <div class="largeView" id="zipcodeMap"></div>
         <div class="largeView">
             <div class="scatterplot" id="pricePerSqFt"></div>
             <div class="histogram" id="yAxisHistogram"></div>
             <div class="histogram" id="xAxisHistogram"></div>
         </div>
-        <div class="largeView">
-        </div>
         <div class="controls">
-            <div class="controls" id="checkbox_beds"></div>
-            <div class="controls" id="checkbox_baths"></div>
-            <div class="controls" id="slider_sqFt">
+            <div id="checkbox_beds">
+                <input name="0bed" class="checkbox" id="0bed" value="0" type="checkbox" checked>Studio</input>
+                <br/><input name="1bed" class="checkbox" id="1bed" value="1" type="checkbox" checked>1 Bedroom</input>
+                <br/><input name="2bed" class="checkbox" id="2bed" value="2" type="checkbox" checked>2 Bedroom</input>
+                <br/><input name="3bed" class="checkbox" id="3bed" value="3" type="checkbox" checked>3 Bedroom</input>
+                <br/><input name="4bed" class="checkbox" id="4bed" value="4" type="checkbox" checked>4+ Bedroom</input>
+            </div>
+            <div id="checkbox_baths"></div>
+            <div id="sliders">
                 <p>
                     <label for="amountSqft">Square Footage:</label>
                     <input type="text" id="amountSqft" style="border: 0; color: #000; font-weight: bold;" />
@@ -74,8 +76,6 @@
                 </p>
                 <div id="slider-range-price"></div>
             </div>
-            <div class="controls" id="slider_price"></div>
-            <div class="controls" id="zipCodeSelector"></div>
         </div>
         <div class="barChart" id="yearVsPrice"></div>
         <div class="barChart" id="pricePerZip"></div>

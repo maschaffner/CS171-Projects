@@ -519,29 +519,12 @@ function updateChart() {
 }
 
 function updateChartZip(zip) {
-    var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
-    var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
-    var minPrice = parseInt($("#slider-range-price").slider("values",0));
-    var maxPrice = parseInt($("#slider-range-price").slider("values",1));
-    var minYear = parseInt($("#slider-range-year").slider("values",0));
-    var maxYear = parseInt($("#slider-range-year").slider("values",1));
-    
-    xDomain = [minSqFt,maxSqFt];
-    yDomain = [maxPrice,minPrice];
-
-    var xScale = d3.scale.linear()
-        .domain(xDomain)
-        .range([0,330]);
-    var yScale = d3.scale.linear()
-        .domain(yDomain)
-        .range([0,240]);
-    
-    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
-        .transition().duration(1000)
-            .attr("cx",function(d) {return xScale(d.sqft)})
-            .attr("cy",function(d) {return yScale(d.price)})
-            .attr("visibility", function(d) {
-                return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt && d.zip == zip  ? "visible" : "hidden"});
+   var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
+        .attr("fill", function(d) {
+                return d.zip == zip ? "steelblue" : "lightgray"})
+        .transition().duration()
+            .attr("r", function(d) {
+                return d.zip == zip ? 5 : 1});
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file

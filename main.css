@@ -1,4 +1,7 @@
 body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     background: steelblue;
     text-align: center;
 }
@@ -34,6 +37,8 @@ body {
 
 .controls {
     width: 450px;
+    background-color: #E7E7E7;
+    padding:20px;
 }
 
 .controls label {
@@ -42,4 +47,40 @@ body {
 
 .checkbox {
     margin-left:15px;
+}
+
+
+#map-canvas { 
+	width:600px;
+	height:840px; 
+	margin-left:30px;
+}
+
+.invisible {
+	display:none;
+}
+
+#details {
+	margin-top:20px;
+	float:left;
+	margin-left:32px;
+	font-size:18px;
+	text-align:left;
+}
+
+.label {
+	color:black;
+}
+
+.value {
+	color:blue;
+}	
+
+#houses {
+	margin-bottom:20px;
+}
+
+#bathroom,#bedrooms {
+	width:100px;
+	float:left;
 }

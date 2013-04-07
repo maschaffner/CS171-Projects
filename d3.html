@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <title></title>
 	<!-- haven't applied any styling in this example -->
     <link rel="stylesheet" type="text/css" href="main.css"/>
@@ -9,6 +10,7 @@
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
   <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
     <script>
   $(function() {
     $( "#slider-range-sqft" ).slider({
@@ -41,29 +43,97 @@
       " - " +" $"+ $( "#slider-range-price" ).slider( "values", 1 ));
   });
   </script>
-  <script src="main.js"></script>
+    <script>
+  $(function() {
+    $( "#slider-range-year" ).slider({
+      range: true,
+      min: 1800,
+      max: 2014,
+      values: [ 1800, 2014 ],
+      slide: function( event, ui ) {
+        $( "#amountYear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ]);
+        updateChart();
+      }
+    });
+    $( "#amountYear" ).val(  $("#slider-range-year" ).slider( "values", 0 ) +
+      " - " + $( "#slider-range-year" ).slider( "values", 1 ));
+  });
+  </script>
   </head>
 
-  <body onload="loadData()">
-    <div class="content">
+  <body onload="initialize()">
+      <textarea id="zips" class="invisible">
+        {"values":[
+        {"zip":"2108","lat":42.357796,"lng":"-71.062674"},
+        {"zip":"2109","lat":42.359981,"lng":-71.054805},
+        {"zip":"2110","lat":42.355817,"lng":-71.055054},
+        {"zip":"2111","lat":42.351894,"lng":-71.060646},
+        {"zip":"2113","lat":42.365257,"lng":-71.055095},
+        {"zip":"2114","lat":42.361601,"lng":-71.065685},
+        {"zip":"2115","lat":42.343784,"lng":-71.090238},
+        {"zip":"2116","lat":42.350309,"lng":-71.075400},
+        {"zip":"2118","lat":42.339690,"lng":-71.073769},
+        {"zip":"2119","lat":42.324279,"lng":-71.085404},
+        {"zip":"2120","lat":42.333118,"lng":-71.096438},
+        {"zip":"2121","lat":42.308190,"lng":-71.082824},
+        {"zip":"2122","lat":42.296550,"lng":-71.055833},
+        {"zip":"2124","lat":42.287679,"lng":-71.072633},
+        {"zip":"2125","lat":42.316610,"lng":-71.060597},
+        {"zip":"2126","lat":42.274733,"lng":-71.091966},
+        {"zip":"2127","lat":42.334741,"lng":-71.045778},
+        {"zip":"2128","lat":42.376360,"lng":-71.029645},
+        {"zip":"2210","lat":42.348509,"lng":-71.043835},
+        {"zip":"2215","lat":42.346232,"lng":-71.100665}]
+        }
+        </textarea>
+      <div class="content">
         <!--This title is an example only; we can brainstorm a new one.-->
-        <div class="title">MarketVision(tm)</div>
-        <div class="subtitle">A Fresh Look At Real Estate</div>
-        <div class="largeView" id="zipcodeMap"></div>
+        <div class="title">Discover Boston</div>
+        <div class="subtitle">Real Estate, At a Glance</div>
+        	<!-- placeholder for our google map -->
+        <div id="map-canvas"></div>
         <div class="largeView">
             <div class="scatterplot" id="pricePerSqFt"></div>
             <div class="histogram" id="yAxisHistogram"></div>
             <div class="histogram" id="xAxisHistogram"></div>
-        </div>
-        <div class="controls">
-            <div id="checkbox_beds">
-                <input name="0bed" class="checkbox" id="0bed" value="0" type="checkbox" checked>Studio</input>
-                <br/><input name="1bed" class="checkbox" id="1bed" value="1" type="checkbox" checked>1 Bedroom</input>
-                <br/><input name="2bed" class="checkbox" id="2bed" value="2" type="checkbox" checked>2 Bedroom</input>
-                <br/><input name="3bed" class="checkbox" id="3bed" value="3" type="checkbox" checked>3 Bedroom</input>
-                <br/><input name="4bed" class="checkbox" id="4bed" value="4" type="checkbox" checked>4+ Bedroom</input>
+        </div><br />
+        <div class="controls" id="controls">
+            <div id="listingtypes">
+                For Sale 
+                <input id="forsale" onclick="filter()" type="radio" name="listing_type" checked />
+                Sold 
+                <input id="sold" onclick="filter()" type="radio" name="listing_type" /><br /><br />
             </div>
-            <div id="checkbox_baths"></div>
+
+            <div id="houses">
+                Number of houses 
+                <input onclick="layCircles()" id="count" type="radio" name="type" /> 
+                Average price 
+                <input onclick="layCircles()" id="average" type="radio" name="type" checked  />
+                Max price 
+                <input onclick="layCircles()" id="max" type="radio" name="type" />
+                Min price 
+                <input onclick="layCircles()" id="min" type="radio" name="type" />
+            </div>
+
+            <div id="bedrooms">
+                <div>Bedrooms</div>
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="1" checked>1<br />
+                <input type="checkbox" class="bedrooms" onclick="filter()"  value="2" checked>2<br />
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="3" checked>3<br />
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="4" checked>4<br />
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="5+" checked>5+<br />
+            </div>
+
+            <div id="baths">
+                <div>Baths</div>
+                <input type="checkbox" class="baths" onclick="filter()" value="1" checked>1 - 1.5<br />
+                <input type="checkbox" class="baths" onclick="filter()"  value="2" checked>2 - 2.5<br />
+                <input type="checkbox" class="baths" onclick="filter()" value="3" checked>3 - 3.5<br />
+                <input type="checkbox" class="baths" onclick="filter()" value="4" checked>4 - 4.5<br />
+                <input type="checkbox" class="baths" onclick="filter()" value="5+" checked>5+<br />
+            </div>
+
             <div id="sliders">
                 <p>
                     <label for="amountSqft">Square Footage:</label>
@@ -75,13 +145,22 @@
                     <input type="text" id="amountPrice" style="width: 200px; border: 0; color: #000; font-weight: bold;" />
                 </p>
                 <div id="slider-range-price"></div>
+                <p>
+                    <label for="amountYear">Year:</label>
+                    <input type="text" id="amountYear" style="width: 200px; border: 0; color: #000; font-weight: bold;" />
+                </p>
+                <div id="slider-range-year"></div>
             </div>
         </div>
         <div class="barChart" id="yearVsPrice"></div>
         <div class="barChart" id="pricePerZip"></div>
         <div class="barChart" id="averagePrice"></div>
-        <div class="bubblePlot" id="zipcodeMap"></div>
         <div class="smallView" id="bulletGraphs"></div>
+        <!-- placeholder for details on demand -->
+ 
+        <div id="details"></div>
+        
+  <script src="main.js"></script>
     </div>
   </body>
 </html>

@@ -431,12 +431,12 @@ function createPricePerSqFtScatterplot(data_in) {
 		// create circles based on our json data. note that this is only for the append operation
 		// in actual vis we'd have to also specify code for update and exit
         // MS: the above comment doesn't apply, since we are only setting the visibility attribute
-		var circles = svg.selectAll("circle")
+		/*var circles = svg.selectAll("circle")
 						 .data(data_in)
 						 .enter()
 						 .append("circle")
 						 .transition().duration(1000);
-		
+		*/
         var xScale = d3.scale.linear()
             .range([0, width])
             .domain([minSqFt,maxSqFt]);
@@ -472,11 +472,12 @@ function createPricePerSqFtScatterplot(data_in) {
               .attr("dy", ".71em")
               .style("text-anchor", "end")
               .text("Price ($)");
-        
+        /*
         circles
             //tooltip code from: sixrevisions.com 
             .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
             .attr("onmouseout","tooltip.hide();")
+            
             .attr("cx",function(d) {
                 return xScale(parseInt(d.sqft));
             })
@@ -488,11 +489,15 @@ function createPricePerSqFtScatterplot(data_in) {
 			// fill color of the circles
             .attr("stroke","lightgray")
             .attr("fill","gray");
-
+        */
 }  
 
 
 function updateChartData(dataIn) {
+
+    var margin = {top: 20, right: 20, bottom: 40, left: 100},
+            width = 450 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
 
     var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
     var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
@@ -513,8 +518,13 @@ function updateChartData(dataIn) {
         .domain(yDomain)
         .range([0,240]);
         
-   var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
-            data(dataIn).enter().append("circle")
+   var svg = d3.select("body").select("#pricePerSqFt").select("svg")
+   var circles = svg.selectAll("circle")
+						 .data(dataIn)
+						 .enter()
+						 .append("circle")
+						 .transition().duration(1000);
+        circles
             .attr("r","1")
             .attr("stroke","lightgray")
             .attr("fill","gray")
@@ -527,7 +537,6 @@ function updateChartData(dataIn) {
                 return yScale(d.price)			
             })
             .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
-   
 }
 
 /*** Example of smoothly filtering out values, by only changing visibility.*/

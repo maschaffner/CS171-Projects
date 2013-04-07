@@ -453,6 +453,9 @@ function createPricePerSqFtScatterplot(data_in) {
             .scale(yScale)
             .orient("left");
 
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .call(d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([1, 8]).on("zoom", zoom));
 		svg.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
@@ -471,8 +474,11 @@ function createPricePerSqFtScatterplot(data_in) {
               .attr("dy", ".71em")
               .style("text-anchor", "end")
               .text("Price ($)");
-              
+        
         circles
+            //tooltip code from: sixrevisions.com 
+            .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
+            .attr("onmouseout","tooltip.hide();")
             .attr("cx",function(d) {
                 return xScale(parseInt(d.sqft));
             })
@@ -482,8 +488,12 @@ function createPricePerSqFtScatterplot(data_in) {
 			// radius of the circles
             .attr("r","1")
 			// fill color of the circles
-            .attr("fill","gray")
-            .attr("stroke","lightgray");
+            .attr("stroke","lightgray")
+            .attr("fill","gray");
+        function zoom() {
+            svg.select(".x.axis").call(xAxis);
+            svg.select(".y.axis").call(yAxis);
+        }
 } 
 
 /*** BEGIN BulletGraph   ***
@@ -519,13 +529,11 @@ function updateChartData(dataIn) {
         .domain(yDomain)
         .range([0,240]);
     
-    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
+   var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
         .data(dataIn)
-        .transition().duration(1000)
-            .attr("cx",function(d) {return xScale(d.sqft)})
-            .attr("cy",function(d) {return yScale(d.price)})
-            .attr("visibility", function(d) {
-                return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
+        .attr("cx",function(d) {return xScale(d.sqft)})
+        .attr("cy",function(d) {return yScale(d.price)})
+        .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
 }
 
 /*** Example of smoothly filtering out values, by only changing visibility.*/
@@ -550,9 +558,6 @@ function updateChart() {
         .range([0,240]);
         
     var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
-        //tooltip code from: sixrevisions.com 
-        .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
-        .attr("onmouseout","tooltip.hide();")
         .transition().duration(1000)
             .attr("cx",function(d) {return xScale(d.sqft)})
             .attr("cy",function(d) {return yScale(d.price)})
@@ -572,6 +577,8 @@ function updateChartZip(zip) {
    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
         .attr("stroke", function(d) {
                 return d.zip == zip ? "blue" : "lightgray"})
+         .attr("fill", function(d) {
+                return d.zip == zip ? "white" : "lightgray"})               
         .transition().duration()
             .attr("r", function(d) {
                 return d.zip == zip ? 2 : 1});
@@ -582,10 +589,13 @@ function showData(dataIn) {
 	console.log(dataIn);
 }
 
+// returns all the listing details in string form 
 function listingToDetailsString(listingIn) {
-    return "Price: $" + listingIn.price + "<br/>" + "SqFt: " + listingIn.sqft + "<br/>" +  "Beds: " + listingIn.beds + "<br/>" + "Baths: " + listingIn.baths + "<br/>" + "Zipcode: " + listingIn.zip + "<br/>" + "Zestimate: $" + listingIn.zestimate;
+    return "Price: $" + withCommas(listingIn.price) + "<br/>" + "SqFt: " + withCommas(listingIn.sqft) + "<br/>" +  "Beds: " + listingIn.beds + "<br/>" + "Baths: " + listingIn.baths + "<br/>" + "Zipcode: 0" + listingIn.zip + "<br/>" + "Zestimate: $" + withCommas(listingIn.zestimate);
 }
 
+
+//all tooltip code from: sixrevisions.com 
 var tooltip=function(){
  var id = 'tt';
  var top = 3;

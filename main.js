@@ -268,11 +268,12 @@ function initialize() {
 		// calls for map to be drawn, since this is our default option
 		drawMap();
         
-		// calls all filters to be applied to newly created map
-		filter();
-        
         // create initial scatterplot
         createPricePerSqFtScatterplot(data_for_sale);
+        
+        // calls all filters to be applied to newly created map
+		filter();
+        
 	});
 
 	
@@ -453,9 +454,6 @@ function createPricePerSqFtScatterplot(data_in) {
             .scale(yScale)
             .orient("left");
 
-        svg.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .call(d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([1, 8]).on("zoom", zoom));
 		svg.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
@@ -490,22 +488,8 @@ function createPricePerSqFtScatterplot(data_in) {
 			// fill color of the circles
             .attr("stroke","lightgray")
             .attr("fill","gray");
-        function zoom() {
-            svg.select(".x.axis").call(xAxis);
-            svg.select(".y.axis").call(yAxis);
-        }
-} 
 
-/*** BEGIN BulletGraph   ***
-    function createBulletGraph() {
-        d3.select("#bulletGraph").select("div")
-            // need to know how to access one record from the JSON object
-            .data()//how to do this part
-        var vertScale = d3.scale.linear()
-            .range([0,100])
-            .domain([0,100]);
-    }
-/*** END BulletGraph ***/  
+}  
 
 
 function updateChartData(dataIn) {
@@ -528,12 +512,22 @@ function updateChartData(dataIn) {
     var yScale = d3.scale.linear()
         .domain(yDomain)
         .range([0,240]);
-    
+        
    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
-        .data(dataIn)
-        .attr("cx",function(d) {return xScale(d.sqft)})
-        .attr("cy",function(d) {return yScale(d.price)})
-        .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
+            data(dataIn).enter().append("circle")
+            .attr("r","1")
+            .attr("stroke","lightgray")
+            .attr("fill","gray")
+            .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
+            .attr("onmouseout","tooltip.hide();")
+            .attr("cx",function(d) {
+                return xScale(d.sqft)
+            })
+            .attr("cy",function(d) { 
+                return yScale(d.price)			
+            })
+            .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
+   
 }
 
 /*** Example of smoothly filtering out values, by only changing visibility.*/

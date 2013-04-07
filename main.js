@@ -268,12 +268,11 @@ function initialize() {
 		// calls for map to be drawn, since this is our default option
 		drawMap();
         
-        // create initial scatterplot
-        createPricePerSqFtScatterplot(data_for_sale);
-        
-        // calls all filters to be applied to newly created map
+		// calls all filters to be applied to newly created map
 		filter();
         
+        // create initial scatterplot
+        createPricePerSqFtScatterplot(data_for_sale);
 	});
 
 	
@@ -431,12 +430,12 @@ function createPricePerSqFtScatterplot(data_in) {
 		// create circles based on our json data. note that this is only for the append operation
 		// in actual vis we'd have to also specify code for update and exit
         // MS: the above comment doesn't apply, since we are only setting the visibility attribute
-		/*var circles = svg.selectAll("circle")
+		var circles = svg.selectAll("circle")
 						 .data(data_in)
 						 .enter()
 						 .append("circle")
 						 .transition().duration(1000);
-		*/
+		
         var xScale = d3.scale.linear()
             .range([0, width])
             .domain([minSqFt,maxSqFt]);
@@ -454,6 +453,9 @@ function createPricePerSqFtScatterplot(data_in) {
             .scale(yScale)
             .orient("left");
 
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .call(d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([1, 8]).on("zoom", zoom));
 		svg.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
@@ -472,12 +474,11 @@ function createPricePerSqFtScatterplot(data_in) {
               .attr("dy", ".71em")
               .style("text-anchor", "end")
               .text("Price ($)");
-        /*
+        
         circles
             //tooltip code from: sixrevisions.com 
             .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
             .attr("onmouseout","tooltip.hide();")
-            
             .attr("cx",function(d) {
                 return xScale(parseInt(d.sqft));
             })
@@ -489,15 +490,25 @@ function createPricePerSqFtScatterplot(data_in) {
 			// fill color of the circles
             .attr("stroke","lightgray")
             .attr("fill","gray");
-        */
-}  
+        function zoom() {
+            svg.select(".x.axis").call(xAxis);
+            svg.select(".y.axis").call(yAxis);
+        }
+} 
+
+/*** BEGIN BulletGraph   ***
+    function createBulletGraph() {
+        d3.select("#bulletGraph").select("div")
+            // need to know how to access one record from the JSON object
+            .data()//how to do this part
+        var vertScale = d3.scale.linear()
+            .range([0,100])
+            .domain([0,100]);
+    }
+/*** END BulletGraph ***/  
 
 
 function updateChartData(dataIn) {
-
-    var margin = {top: 20, right: 20, bottom: 40, left: 100},
-            width = 450 - margin.left - margin.right,
-            height = 300 - margin.top - margin.bottom;
 
     var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
     var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
@@ -517,26 +528,12 @@ function updateChartData(dataIn) {
     var yScale = d3.scale.linear()
         .domain(yDomain)
         .range([0,240]);
-        
-   var svg = d3.select("body").select("#pricePerSqFt").select("svg")
-   var circles = svg.selectAll("circle")
-						 .data(dataIn)
-						 .enter()
-						 .append("circle")
-						 .transition().duration(1000);
-        circles
-            .attr("r","1")
-            .attr("stroke","lightgray")
-            .attr("fill","gray")
-            .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
-            .attr("onmouseout","tooltip.hide();")
-            .attr("cx",function(d) {
-                return xScale(d.sqft)
-            })
-            .attr("cy",function(d) { 
-                return yScale(d.price)			
-            })
-            .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
+    
+   var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
+        .data(dataIn)
+        .attr("cx",function(d) {return xScale(d.sqft)})
+        .attr("cy",function(d) {return yScale(d.price)})
+        .attr("visibility", function(d) {return d.price > minPrice && d.price < maxPrice && d.sqft > minSqFt && d.sqft < maxSqFt  ? "visible" : "hidden"});
 }
 
 /*** Example of smoothly filtering out values, by only changing visibility.*/

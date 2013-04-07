@@ -33,7 +33,7 @@
       range: true,
       min: 0,
       max: 6000000,
-      values: [ 0, 1000000 ],
+      values: [ 0, 6000000 ],
       slide: function( event, ui ) {
         $( "#amountPrice" ).val( "$" + ui.values[ 0 ] + " - " + " $" + ui.values[ 1 ]);
         updateChart();
@@ -155,7 +155,7 @@
         <div class="barChart" id="yearVsPrice"></div>
         <div class="barChart" id="pricePerZip"></div>
         <div class="barChart" id="averagePrice"></div>
-        <div class="smallView" id="bulletGraphs"></div>
+        <div class="smallView" id="bullet"></div>
         <!-- placeholder for details on demand -->
  
         <div id="details"></div>

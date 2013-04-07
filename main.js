@@ -14,6 +14,8 @@ var counts = new Array();
 var maxes = new Array();
 // the min home price for each zip code in our data set
 var mins = new Array();
+// the sum of all home zestimates for each zip code in our data set
+var zestimates = new Array();
 
 // our zip code lookup values data set (includes geo coordinates)
 var zips = JSON.parse(document.getElementById("zips").value);
@@ -128,6 +130,9 @@ function filter() {
 
 	// clear out details on demand div
 	document.getElementById("details").innerHTML = "";
+    
+    // clear out bullet graph
+	document.getElementById("bullet").innerHTML = "";
 }
 
 /** draws the circles onto the google map */
@@ -183,6 +188,9 @@ function selectZip(circle,zip,circles) {
 
 	// output details on demand in designated div
 	showDetails(zip);
+	
+	// create bullet graph
+	bulletGraph(zip);
 
 	//PASS THE ZIP CODE TO SCATTER PLOT BELOW
 	updateChartZip(zip);
@@ -281,19 +289,22 @@ function clearBuckets() {
 	prices = [];
 	counts = [];
 	maxes = [];
-	mins = [];		
+	mins = [];
+	zestimates = [];		
 }
 
 /** load a given home listing into the corresponding output arrays */
-function loadListing(zip,price) {
+function loadListing(zip,price, zestimate) {
 	// if the zip code for this home has not been registered yet
 	if(prices[zip] == null) {
 		prices[zip] = 0;
+        zestimates[zip] = 0;
 		counts[zip] = 0;
 		maxes[zip] = 0;
 		mins[zip] = 100000000;
 		prices[zip] = parseInt(prices[zip]) + parseInt(price);
-		counts[zip]++;
+		zestimates[zip] = parseInt(zestimates[zip]) + parseInt(zestimate);
+        counts[zip]++;
 		if(mins[zip] >= parseInt(price)) {
 			mins[zip] = parseInt(price);
 		}
@@ -303,6 +314,7 @@ function loadListing(zip,price) {
 	// if this zip code for this home already exists in our arrays
 	} else {
 		prices[zip] = parseInt(prices[zip]) + parseInt(price);
+		zestimates[zip] = parseInt(zestimates[zip]) + parseInt(zestimate);
 		counts[zip]++;
 		if(mins[zip] >= parseInt(price)) {
 			mins[zip] = parseInt(price);
@@ -356,7 +368,7 @@ function loadBuckets(d,beds,baths,min_sqft,max_sqft,min_year,max_year) {
 
 		// check if the necessary filters were selected to cause a meaningful query
 		if (bed_criterion == 1 && bath_criterion == 1 && sqft_criterion == 1 && year_criterion == 1) {
-			loadListing(selected_array[listing].zip,selected_array[listing].price);
+			loadListing(selected_array[listing].zip,selected_array[listing].price,selected_array[listing].zestimate);
 		} 
 
 		// reset criteria flags
@@ -367,6 +379,34 @@ function loadBuckets(d,beds,baths,min_sqft,max_sqft,min_year,max_year) {
 	}
 }
 
+/** create a bullet graph of actual versus project price based on selected zip code */
+function bulletGraph(zip) {
+	// remove the "actual" bar
+	d3.select(".actual").remove();
+	// remove the "zestimate" bar
+	d3.select(".zestimate").remove();
+	// remove the "max" bar
+	d3.select(".max").remove();
+	// scale our range to maximum price of selected zip, and the range to the width of the bullet graph
+	var scale =	d3.scale.linear().domain([0,maxes[zip]]).range([0,400]);
+	// scale actual price amount
+	price = scale(parseInt(parseInt(prices[zip])/parseInt(counts[zip])));
+	// scale max value per selected zip
+	max = scale(parseInt(maxes[zip]));
+	// scale zestimate amount
+	zestimate = scale(parseInt(parseInt(zestimates[zip])/parseInt(counts[zip])));
+	// price data array to be passed to d3
+	price = [price];
+	// zestimate data array to be passed to d3
+	zestimate = [zestimate];
+	// max data array to be passed to d3
+	max = [max];
+	// add animated bars to bullet graph with set parameters
+	d3.select("#bullet").selectAll("div").data(zestimate).enter().append("div").attr("class","actual").transition().duration(600).style("width",function(d){return d+"px"}).text("actual");
+	d3.select("#bullet").data(price).append("div").attr("class","zestimate").transition().duration(1000).style("width",function(d){return d+"px"}).text("zestimate");
+	d3.select("#bullet").data(max).append("div").attr("class","max").transition().duration(1300).style("width",function(d){return d+"px"}).text("max");
+	
+}
 
 // PricePerSqFtScatterplot
 function createPricePerSqFtScatterplot(data_in) {
@@ -382,9 +422,13 @@ function createPricePerSqFtScatterplot(data_in) {
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 		
+        var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
+        var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
+        var minPrice = parseInt($("#slider-range-price").slider("values",0));
+        var maxPrice = parseInt($("#slider-range-price").slider("values",1));
+        
 		// create circles based on our json data. note that this is only for the append operation
 		// in actual vis we'd have to also specify code for update and exit
-
         // MS: the above comment doesn't apply, since we are only setting the visibility attribute
 		var circles = svg.selectAll("circle")
 						 .data(data_in)
@@ -394,11 +438,11 @@ function createPricePerSqFtScatterplot(data_in) {
 		
         var xScale = d3.scale.linear()
             .range([0, width])
-            .domain([0,4000]);
+            .domain([minSqFt,maxSqFt]);
 
         var yScale = d3.scale.linear()
             .range([height,0])
-            .domain(d3.extent(data_in,function(d) {return parseInt(d.price)}));
+            .domain([minPrice,maxPrice]);
 
         var xAxis = d3.svg.axis()
             .scale(xScale)
@@ -455,12 +499,15 @@ function createPricePerSqFtScatterplot(data_in) {
 
 
 function updateChartData(dataIn) {
+
     var minSqFt = parseInt($("#slider-range-sqft").slider("values",0));
     var maxSqFt = parseInt($("#slider-range-sqft").slider("values",1));
     var minPrice = parseInt($("#slider-range-price").slider("values",0));
     var maxPrice = parseInt($("#slider-range-price").slider("values",1));
     var minYear = parseInt($("#slider-range-year").slider("values",0));
     var maxYear = parseInt($("#slider-range-year").slider("values",1));
+    
+    dataIn.sort(function(a,b) {return b.beds-a.beds+Math.floor(Math.random()*4)});
     
     xDomain = [minSqFt,maxSqFt];
     yDomain = [maxPrice,minPrice];
@@ -503,6 +550,9 @@ function updateChart() {
         .range([0,240]);
         
     var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
+        //tooltip code from: sixrevisions.com 
+        .attr("onmousemove",function(d) {return "tooltip.show('" + listingToDetailsString(d)+"');"})
+        .attr("onmouseout","tooltip.hide();")
         .transition().duration(1000)
             .attr("cx",function(d) {return xScale(d.sqft)})
             .attr("cy",function(d) {return yScale(d.price)})
@@ -520,14 +570,93 @@ function updateChart() {
 
 function updateChartZip(zip) {
    var svg = d3.select("body").select("#pricePerSqFt").selectAll("circle")
-        .attr("fill", function(d) {
-                return d.zip == zip ? "steelblue" : "lightgray"})
+        .attr("stroke", function(d) {
+                return d.zip == zip ? "blue" : "lightgray"})
         .transition().duration()
             .attr("r", function(d) {
-                return d.zip == zip ? 5 : 1});
+                return d.zip == zip ? 2 : 1});
 }
 
 // only called when you click on the body of the page. outputs the data as is from csv file
 function showData(dataIn) {
 	console.log(dataIn);
 }
+
+function listingToDetailsString(listingIn) {
+    return "Price: $" + listingIn.price + "<br/>" + "SqFt: " + listingIn.sqft + "<br/>" +  "Beds: " + listingIn.beds + "<br/>" + "Baths: " + listingIn.baths + "<br/>" + "Zipcode: " + listingIn.zip + "<br/>" + "Zestimate: $" + listingIn.zestimate;
+}
+
+var tooltip=function(){
+ var id = 'tt';
+ var top = 3;
+ var left = 3;
+ var maxw = 300;
+ var speed = 10;
+ var timer = 20;
+ var endalpha = 95;
+ var alpha = 0;
+ var tt,t,c,b,h;
+ var ie = document.all ? true : false;
+ return{
+  show:function(v,w){
+   if(tt == null){
+    tt = document.createElement('div');
+    tt.setAttribute('id',id);
+    t = document.createElement('div');
+    t.setAttribute('id',id + 'top');
+    c = document.createElement('div');
+    c.setAttribute('id',id + 'cont');
+    b = document.createElement('div');
+    b.setAttribute('id',id + 'bot');
+    tt.appendChild(t);
+    tt.appendChild(c);
+    tt.appendChild(b);
+    document.body.appendChild(tt);
+    tt.style.opacity = 0;
+    tt.style.filter = 'alpha(opacity=0)';
+    document.onmousemove = this.pos;
+   }
+   tt.style.display = 'block';
+   c.innerHTML = v;
+   tt.style.width = w ? w + 'px' : 'auto';
+   if(!w && ie){
+    t.style.display = 'none';
+    b.style.display = 'none';
+    tt.style.width = tt.offsetWidth;
+    t.style.display = 'block';
+    b.style.display = 'block';
+   }
+  if(tt.offsetWidth > maxw){tt.style.width = maxw + 'px'}
+  h = parseInt(tt.offsetHeight) + top;
+  clearInterval(tt.timer);
+  tt.timer = setInterval(function(){tooltip.fade(1)},timer);
+  },
+  pos:function(e){
+   var u = ie ? event.clientY + document.documentElement.scrollTop : e.pageY;
+   var l = ie ? event.clientX + document.documentElement.scrollLeft : e.pageX;
+   tt.style.top = (u - h) + 'px';
+   tt.style.left = (l + left) + 'px';
+  },
+  fade:function(d){
+   var a = alpha;
+   if((a != endalpha && d == 1) || (a != 0 && d == -1)){
+    var i = speed;
+   if(endalpha - a < speed && d == 1){
+    i = endalpha - a;
+   }else if(alpha < speed && d == -1){
+     i = a;
+   }
+   alpha = a + (i * d);
+   tt.style.opacity = alpha * .01;
+   tt.style.filter = 'alpha(opacity=' + alpha + ')';
+  }else{
+    clearInterval(tt.timer);
+     if(d == -1){tt.style.display = 'none'}
+  }
+ },
+ hide:function(){
+  clearInterval(tt.timer);
+   tt.timer = setInterval(function(){tooltip.fade(-1)},timer);
+  }
+ };
+}();

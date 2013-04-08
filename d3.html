@@ -1,64 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <title></title>
-	<!-- haven't applied any styling in this example -->
-    <link rel="stylesheet" type="text/css" href="main.css"/>
-<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
-    <!-- Link to d3 library -->
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
-    <script>
-  $(function() {
-    $( "#slider-range-sqft" ).slider({
-      range: true,
-      min: 0,
-      max: 4000,
-      values: [ 0, 3000 ],
-      slide: function( event, ui ) {
-        $( "#amountSqft" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] + " sq ft" );
-        filter();
-      }
-    });
-    $( "#amountSqft" ).val( $( "#slider-range-sqft" ).slider( "values", 0 ) +
-      " - " + $( "#slider-range-sqft" ).slider( "values", 1 ) + " sq ft");
-  });
-  </script>
-      <script>
-  $(function() {
-    $( "#slider-range-price" ).slider({
-      range: true,
-      min: 0,
-      max: 6000000,
-      values: [ 0, 1000000 ],
-      slide: function( event, ui ) {
-        $( "#amountPrice" ).val( "$" + ui.values[ 0 ] + " - " + " $" + ui.values[ 1 ]);
-        filter();
-      }
-    });
-    $( "#amountPrice" ).val( "$" +  $("#slider-range-price" ).slider( "values", 0 ) +
-      " - " +" $"+ $( "#slider-range-price" ).slider( "values", 1 ));
-  });
-  </script>
-    <script>
-  $(function() {
-    $( "#slider-range-year" ).slider({
-      range: true,
-      min: 1800,
-      max: 2014,
-      values: [ 1800, 2014 ],
-      slide: function( event, ui ) {
-        $( "#amountYear" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ]);
-        filter();
-      }
-    });
-    $( "#amountYear" ).val(  $("#slider-range-year" ).slider( "values", 0 ) +
-      " - " + $( "#slider-range-year" ).slider( "values", 1 ));
-  });
-  </script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<title></title>
+	<!-- our custom style sheet -->
+	<link rel="stylesheet" type="text/css" href="main.css"/>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+	<!-- Link to d3 library -->
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
   </head>
 
   <body onload="initialize()">
@@ -88,78 +40,71 @@
         </textarea>
       <div class="content">
         <!--This title is an example only; we can brainstorm a new one.-->
-        <div class="title">Discover Boston</div>
-        <div class="subtitle">Real Estate, At a Glance</div>
-        	<!-- placeholder for our google map -->
-        <div id="map-canvas"></div>
+        <div class="title">Discover Boston: <span class="subtitle">Real Estate, At a Glance</span></div>
+       	
+		<!-- placeholder for our google map -->
+        <div id="map-canvas"></div>		
         <div class="largeView">
             <div class="scatterplot" id="pricePerSqFt"></div>
             <div class="histogram" id="yAxisHistogram"></div>
             <div class="histogram" id="xAxisHistogram"></div>
         </div><br />
-        <div class="controls" id="controls">
-            <div id="listingtypes">
-                For Sale 
-                <input id="forsale" onclick="filter()" type="radio" name="listing_type" checked />
-                Sold 
-                <input id="sold" onclick="filter()" type="radio" name="listing_type" /><br /><br />
-            </div>
-
+        <div class="dimensions">
             <div id="houses">
-                Number of houses 
-                <input onclick="layCircles()" id="count" type="radio" name="type" /> 
-                Average price 
-                <input onclick="layCircles()" id="average" type="radio" name="type" checked  />
-                Max price 
-                <input onclick="layCircles()" id="max" type="radio" name="type" />
-                Min price 
-                <input onclick="layCircles()" id="min" type="radio" name="type" />
+				<input onclick="layCircles()" id="count" type="radio" name="type" />Number of houses 
+				<input onclick="layCircles()" id="average" type="radio" name="type" checked  />Average price
+				<!--<input onclick="layCircles()" id="max" type="radio" name="type" />Max price
+				<input onclick="layCircles()" id="min" type="radio" name="type" />Min price -->
             </div>
+		</div>
+		
+		<!-- placeholder for bullet graph -->
+        <div class="smallView" id="bullet"></div>
+		<!-- placeholder for details on demand -->
+        <div id="details"></div>
+		
+		<div id="common_controls">
+			<div id="listingtypes">
+				<input id="forsale" onclick="filter()" type="radio" name="listing_type" checked />For Sale 
+				<input id="sold" onclick="filter()" type="radio" name="listing_type" />Sold
+			</div>	
 
             <div id="bedrooms">
                 <div>Bedrooms</div>
-                <input type="checkbox" class="bedrooms" onclick="filter()" value="1" checked>1<br />
-                <input type="checkbox" class="bedrooms" onclick="filter()"  value="2" checked>2<br />
-                <input type="checkbox" class="bedrooms" onclick="filter()" value="3" checked>3<br />
-                <input type="checkbox" class="bedrooms" onclick="filter()" value="4" checked>4<br />
-                <input type="checkbox" class="bedrooms" onclick="filter()" value="5+" checked>5+<br />
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="1" checked>1
+                <input type="checkbox" class="bedrooms" onclick="filter()"  value="2" checked>2
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="3" checked>3
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="4" checked>4
+                <input type="checkbox" class="bedrooms" onclick="filter()" value="5+" checked>5+
             </div>
 
             <div id="baths">
                 <div>Baths</div>
-                <input type="checkbox" class="baths" onclick="filter()" value="1" checked>1 - 1.5<br />
-                <input type="checkbox" class="baths" onclick="filter()"  value="2" checked>2 - 2.5<br />
-                <input type="checkbox" class="baths" onclick="filter()" value="3" checked>3 - 3.5<br />
-                <input type="checkbox" class="baths" onclick="filter()" value="4" checked>4 - 4.5<br />
-                <input type="checkbox" class="baths" onclick="filter()" value="5+" checked>5+<br />
+                <input type="checkbox" class="baths" onclick="filter()" value="1" checked>1
+                <input type="checkbox" class="baths" onclick="filter()"  value="2" checked>2
+                <input type="checkbox" class="baths" onclick="filter()" value="3" checked>3
+                <input type="checkbox" class="baths" onclick="filter()" value="4" checked>4
+                <input type="checkbox" class="baths" onclick="filter()" value="5+" checked>5+
             </div>
 
-            <div id="sliders">
-                <p>
-                    <label for="amountSqft">Square Footage:</label>
-                    <input type="text" id="amountSqft" style="border: 0; color: #000; font-weight: bold;" />
-                </p>
-                <div id="slider-range-sqft"></div>
-                <p>
-                    <label for="amountPrice">Price:</label>
-                    <input type="text" id="amountPrice" style="width: 200px; border: 0; color: #000; font-weight: bold;" />
-                </p>
-                <div id="slider-range-price"></div>
-                <p>
-                    <label for="amountYear">Year:</label>
-                    <input type="text" id="amountYear" style="width: 200px; border: 0; color: #000; font-weight: bold;" />
-                </p>
-                <div id="slider-range-year"></div>
-            </div>
+            <table id="sliders">
+                <tr>
+					<td><label for="amountSqft">Square Footage:</label><input type="text" id="amountSqft" /></td>
+					<td><label for="amountPrice">Price:</label><input type="text" id="amountPrice" /></td>
+					<td class="year"><label for="amountYear">Year:</label><input type="text" id="amountYear" /></td>
+				</tr>
+                
+				<tr>
+					<td><div id="slider-range-sqft" class="slider"></div></td>
+					<td><div id="slider-range-price" class="slider"></div></td>
+					<td class="year"><div id="slider-range-year" class="slider"></div></td>
+				</tr>
+            </table>
         </div>
         <div class="barChart" id="yearVsPrice"></div>
         <div class="barChart" id="pricePerZip"></div>
         <div class="barChart" id="averagePrice"></div>
-        <div class="smallView" id="bullet"></div>
-        <!-- placeholder for details on demand -->
- 
-        <div id="details"></div>
-        
+       
   <script src="main.js"></script>
     </div>
   </body>
